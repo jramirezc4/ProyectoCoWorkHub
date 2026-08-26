@@ -8,6 +8,14 @@ from reservas.infra.factories import ReservationCostCalculatorFactory
 from reservas.models import EstadoReserva, ModalidadPago, Reserva
 
 
+class ReservationConflictError(ValidationError):
+    """Indicates that the requested time range cannot be reserved."""
+
+
+class SubscriptionRequiredError(ValidationError):
+    """Indicates that a subscription is required for this payment mode."""
+
+
 class ReservationService:
     def __init__(self, calculator_factory=None):
         self.calculator_factory = calculator_factory or ReservationCostCalculatorFactory()
@@ -35,7 +43,7 @@ class ReservationService:
             fecha_fin__gte=fecha_fin,
         ).exists()
         if not exists:
-            raise ValidationError('El usuario no tiene una suscripción activa para esta reserva.')
+            raise SubscriptionRequiredError('El usuario no tiene una suscripción activa para esta reserva.')
 
     def _validate_availability(self, espacio, fecha_inicio, fecha_fin):
         occupied = Reserva.objects.filter(
@@ -45,7 +53,7 @@ class ReservationService:
             fecha_fin__gt=fecha_inicio,
         ).exists()
         if occupied:
-            raise ValidationError('El espacio no está disponible en ese rango de fechas.')
+            raise ReservationConflictError('El espacio no está disponible en ese rango de fechas.')
 
     def _coerce_datetime(self, value, field_name):
         if hasattr(value, 'year'):
