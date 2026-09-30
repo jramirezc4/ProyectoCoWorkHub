@@ -18,7 +18,9 @@ class ReservationCollectionAPIView(APIView):
     permission_classes = [IsAuthenticated]
 
     def get(self, request):
-        reservations = request.user.reservas.select_related('espacio__sede').order_by('-fecha_creacion')
+        reservations = Reserva.objects.select_related('espacio__sede', 'usuario').order_by('-fecha_creacion')
+        if not request.user.has_full_access():
+            reservations = reservations.filter(usuario=request.user)
         return Response(ReservationSerializer(reservations, many=True).data)
 
     def post(self, request):
@@ -45,9 +47,8 @@ class ReservationDetailAPIView(APIView):
     permission_classes = [IsAuthenticated]
 
     def get(self, request, pk):
-        reservation = get_object_or_404(
-            Reserva.objects.select_related('espacio__sede', 'usuario'),
-            pk=pk,
-            usuario=request.user,
-        )
+        reservation_queryset = Reserva.objects.select_related('espacio__sede', 'usuario')
+        if not request.user.has_full_access():
+            reservation_queryset = reservation_queryset.filter(usuario=request.user)
+        reservation = get_object_or_404(reservation_queryset, pk=pk)
         return Response(ReservationSerializer(reservation).data)

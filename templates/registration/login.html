@@ -1,0 +1,202 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Iniciar sesión | Coworkhub</title>
+    <style>
+        :root {
+            --tsn-tan: #D2B48C;
+            --tsn-tan-deep: #b99567;
+            --tsn-navy: #0f172a;
+            --tsn-slate: #1e293b;
+            --tsn-surface: #f8f5f0;
+            --tsn-border: rgba(15, 23, 42, 0.08);
+            --tsn-white: #ffffff;
+            --tsn-text: #18212f;
+            --tsn-muted: #59677a;
+            --tsn-shadow: 0 18px 45px rgba(15, 23, 42, 0.14);
+        }
+
+        * { box-sizing: border-box; }
+
+        body {
+            margin: 0;
+            min-height: 100vh;
+            display: grid;
+            place-items: center;
+            font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #f4efe9 0%, #efe7dc 45%, #f8f5f0 100%);
+            color: var(--tsn-text);
+        }
+
+        .login-shell {
+            width: min(92vw, 420px);
+        }
+
+        .login-card {
+            background: rgba(255,255,255,0.86);
+            border: 1px solid var(--tsn-border);
+            border-radius: 24px;
+            padding: 2.2rem 2rem 1.5rem;
+            box-shadow: var(--tsn-shadow);
+            backdrop-filter: blur(8px);
+        }
+
+        .brand {
+            display: flex;
+            align-items: center;
+            gap: 0.8rem;
+            margin-bottom: 1.6rem;
+        }
+
+        .brand-mark {
+            width: 42px;
+            height: 42px;
+            border-radius: 12px;
+            background: linear-gradient(135deg, var(--tsn-tan) 0%, var(--tsn-tan-deep) 100%);
+            position: relative;
+            box-shadow: inset 0 2px 0 rgba(255,255,255,0.4);
+        }
+
+        .brand-mark::before {
+            content: "";
+            position: absolute;
+            inset: 9px;
+            border: 2px solid rgba(255,255,255,0.9);
+            border-radius: 8px;
+        }
+
+        .brand h1 {
+            margin: 0;
+            font-size: 1.25rem;
+            color: var(--tsn-navy);
+            letter-spacing: 0.04em;
+        }
+
+        .brand small {
+            display: block;
+            color: var(--tsn-muted);
+            font-size: 0.74rem;
+            letter-spacing: 0.12em;
+            text-transform: uppercase;
+            margin-top: 0.2rem;
+        }
+
+        .alert {
+            background: rgba(210, 180, 140, 0.14);
+            border: 1px solid rgba(185, 149, 103, 0.25);
+            color: var(--tsn-slate);
+            border-radius: 12px;
+            padding: 0.8rem 0.9rem;
+            margin-bottom: 1rem;
+            font-size: 0.92rem;
+        }
+
+        form {
+            display: flex;
+            flex-direction: column;
+            gap: 1.1rem;
+        }
+
+        .field {
+            display: flex;
+            flex-direction: column;
+            gap: 0.45rem;
+        }
+
+        label {
+            font-weight: 600;
+            color: var(--tsn-slate);
+            font-size: 0.9rem;
+        }
+
+        input {
+            width: 100%;
+            border: 1px solid rgba(15, 23, 42, 0.12);
+            background: rgba(248,245,240,0.75);
+            border-radius: 12px;
+            padding: 0.8rem 0.9rem;
+            font-size: 1rem;
+            color: var(--tsn-text);
+            transition: border-color 0.2s ease, box-shadow 0.2s ease, transform 0.2s ease;
+        }
+
+        input:focus {
+            outline: none;
+            border-color: var(--tsn-tan);
+            box-shadow: 0 0 0 4px rgba(210, 180, 140, 0.18);
+            background: var(--tsn-white);
+        }
+
+        .actions {
+            margin-top: 0.5rem;
+        }
+
+        button {
+            border: none;
+            border-radius: 12px;
+            background: linear-gradient(135deg, var(--tsn-tan) 0%, var(--tsn-tan-deep) 100%);
+            color: var(--tsn-navy);
+            font-weight: 700;
+            font-size: 0.98rem;
+            letter-spacing: 0.02em;
+            padding: 0.9rem 1.1rem;
+            cursor: pointer;
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+            box-shadow: 0 10px 18px rgba(185, 149, 103, 0.28);
+        }
+
+        button:hover {
+            transform: translateY(-1px);
+        }
+
+        .meta {
+            text-align: center;
+            margin-top: 1.2rem;
+            font-size: 0.82rem;
+            color: var(--tsn-muted);
+        }
+
+        .register-link {
+            display: inline-block;
+            margin-top: 0.35rem;
+            color: var(--tsn-navy);
+            font-weight: 700;
+            text-decoration: none;
+        }
+    </style>
+</head>
+<body>
+    <main class="login-shell">
+        <section class="login-card">
+            <div class="brand">
+                <div class="brand-mark" aria-hidden="true"></div>
+                <div>
+                    <h1>Coworkhub</h1>
+                    <small>acceso corporativo</small>
+                </div>
+            </div>
+
+            {% if form.errors %}
+                <div class="alert">Credenciales inválidas. Intenta nuevamente.</div>
+            {% endif %}
+
+            <form method="post">
+                {% csrf_token %}
+                {{ form.as_p }}
+                {% if next %}
+                    <input type="hidden" name="next" value="{{ next }}">
+                {% endif %}
+                <div class="actions">
+                    <button type="submit">Entrar</button>
+                </div>
+            </form>
+            <div class="meta">
+                ¿Todavía no tienes una cuenta?<br>
+                <a class="register-link" href="/accounts/register/">Crear cuenta</a>
+            </div>
+        </section>
+    </main>
+</body>
+</html>

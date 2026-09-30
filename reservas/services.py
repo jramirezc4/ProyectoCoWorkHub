@@ -34,7 +34,7 @@ class ReservationService:
         return reserva
 
     def _validate_subscription(self, usuario, modalidad_pago, fecha_inicio, fecha_fin):
-        if modalidad_pago != ModalidadPago.SUSCRIPCION:
+        if modalidad_pago != ModalidadPago.SUSCRIPCION or usuario.has_full_access():
             return
         exists = Suscripcion.objects.filter(
             usuario=usuario,

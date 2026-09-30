@@ -109,3 +109,18 @@ vista.
 	centraliza la construccion valida de la entidad.
 - **Factory:** encapsula la seleccion entre calculador real y mock. Para usar
 	el mock en pruebas o una demo: `COWORKHUB_COST_CALCULATOR=MOCK`.
+
+## Migracion a microservicios
+
+La cotizacion de reservas fue extraida a un microservicio Flask independiente.
+Django conserva usuarios, disponibilidad, suscripciones y persistencia; Flask
+calcula el costo a traves de `POST /api/v2/cotizaciones/` y responde JSON.
+
+Para levantar la topologia completa con Nginx:
+
+```powershell
+docker compose up --build
+```
+
+La documentacion de la matriz de decision, el diagrama y la separacion tecnica
+esta en [docs/Migracion-a-Microservicios.md](docs/Migracion-a-Microservicios.md).

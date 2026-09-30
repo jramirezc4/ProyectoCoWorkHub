@@ -1,0 +1,274 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mi perfil | Coworkhub</title>
+    <style>
+        :root {
+            --tsn-tan: #D2B48C;
+            --tsn-tan-deep: #b99567;
+            --tsn-navy: #0f172a;
+            --tsn-slate: #1e293b;
+            --tsn-surface: #f8f5f0;
+            --tsn-border: rgba(15, 23, 42, 0.08);
+            --tsn-white: #ffffff;
+            --tsn-text: #18212f;
+            --tsn-muted: #59677a;
+            --tsn-shadow: 0 18px 45px rgba(15, 23, 42, 0.14);
+        }
+
+        * { box-sizing: border-box; }
+
+        body {
+            margin: 0;
+            min-height: 100vh;
+            font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #f6f1ea 0%, #f0e7db 42%, #f9f6f2 100%);
+            color: var(--tsn-text);
+        }
+
+        .topbar {
+            background: rgba(15, 23, 42, 0.96);
+            color: var(--tsn-white);
+            padding: 1rem 5vw;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .brand {
+            display: flex;
+            align-items: center;
+            gap: 0.8rem;
+            font-weight: 700;
+            letter-spacing: 0.05em;
+        }
+
+        .brand-mark {
+            width: 14px;
+            height: 14px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, var(--tsn-tan), var(--tsn-tan-deep));
+            box-shadow: 0 0 0 4px rgba(210, 180, 140, 0.18);
+        }
+
+        .nav {
+            display: flex;
+            gap: 1rem;
+            align-items: center;
+        }
+
+        .nav a {
+            color: white;
+            text-decoration: none;
+            opacity: 0.8;
+            font-size: 0.92rem;
+        }
+
+        .nav .primary {
+            background: linear-gradient(135deg, var(--tsn-tan), var(--tsn-tan-deep));
+            color: var(--tsn-navy);
+            border-radius: 999px;
+            padding: 0.7rem 1rem;
+            font-weight: 700;
+            opacity: 1;
+        }
+
+        .logout-form { margin: 0; }
+
+        .logout-form button {
+            border: 1px solid rgba(255,255,255,0.28);
+            border-radius: 999px;
+            padding: 0.65rem 0.9rem;
+            background: transparent;
+            color: white;
+            font: inherit;
+            cursor: pointer;
+        }
+
+        .page {
+            max-width: 1100px;
+            margin: 0 auto;
+            padding: 3rem 5vw 4rem;
+        }
+
+        .layout {
+            display: grid;
+            grid-template-columns: 1fr 1.2fr;
+            gap: 1.5rem;
+        }
+
+        .card {
+            background: rgba(255,255,255,0.82);
+            border: 1px solid var(--tsn-border);
+            border-radius: 26px;
+            box-shadow: var(--tsn-shadow);
+            padding: 1.5rem;
+        }
+
+        .info-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0.9rem 0;
+            border-bottom: 1px solid rgba(15, 23, 42, 0.08);
+        }
+
+        .info-row:last-child { border-bottom: 0; }
+
+        .info-row label {
+            color: var(--tsn-muted);
+            font-size: 0.78rem;
+            text-transform: uppercase;
+            letter-spacing: 0.08em;
+        }
+
+        .info-row strong {
+            color: var(--tsn-navy);
+        }
+
+        h1, h2 {
+            margin-top: 0;
+            color: var(--tsn-navy);
+        }
+
+        h1 {
+            font-size: clamp(2.2rem, 4vw, 3rem);
+            letter-spacing: -0.05em;
+            margin-bottom: 0.5rem;
+        }
+
+        .eyebrow {
+            display: inline-block;
+            background: rgba(210, 180, 140, 0.18);
+            border: 1px solid rgba(185, 149, 103, 0.2);
+            padding: 0.45rem 0.8rem;
+            border-radius: 999px;
+            font-size: 0.72rem;
+            font-weight: 700;
+            letter-spacing: 0.12em;
+            text-transform: uppercase;
+            color: var(--tsn-slate);
+        }
+
+        .list {
+            display: grid;
+            gap: 0.8rem;
+        }
+
+        .reservation {
+            background: rgba(248,245,240,0.9);
+            border: 1px solid rgba(15, 23, 42, 0.06);
+            border-radius: 16px;
+            padding: 1rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .reservation strong {
+            display: block;
+            margin-bottom: 0.1rem;
+            color: var(--tsn-navy);
+        }
+
+        .reservation small {
+            color: var(--tsn-muted);
+        }
+
+        .badge {
+            background: rgba(210, 180, 140, 0.18);
+            color: var(--tsn-slate);
+            font-weight: 700;
+            border-radius: 999px;
+            padding: 0.45rem 0.7rem;
+            font-size: 0.74rem;
+        }
+
+        .button {
+            display: inline-block;
+            margin-top: 1rem;
+            text-decoration: none;
+            background: linear-gradient(135deg, var(--tsn-tan), var(--tsn-tan-deep));
+            color: var(--tsn-navy);
+            font-weight: 700;
+            border-radius: 12px;
+            padding: 0.85rem 1.2rem;
+        }
+
+        @media (max-width: 860px) {
+            .layout {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <header class="topbar">
+        <div class="brand">
+            <div class="brand-mark"></div>
+            <span>Coworkhub</span>
+        </div>
+        <nav class="nav">
+            <a href="/dashboard/">Dashboard</a>
+            <a href="/reservas/crear/" class="primary">Nueva reserva</a>
+            <form method="post" action="/accounts/logout/" class="logout-form">
+                {% csrf_token %}
+                <button type="submit">Cerrar sesión</button>
+            </form>
+        </nav>
+    </header>
+
+    <main class="page">
+        <span class="eyebrow">Cuenta</span>
+        <h1>Mi perfil</h1>
+
+        <div class="layout">
+            <section class="card">
+                <h2>Información personal</h2>
+                <div class="info-row">
+                    <label>Nombre</label>
+                    <strong>{{ user.nombre }}</strong>
+                </div>
+                <div class="info-row">
+                    <label>Email</label>
+                    <strong>{{ user.email }}</strong>
+                </div>
+                <div class="info-row">
+                    <label>Teléfono</label>
+                    <strong>{{ user.telefono|default:'No registrado' }}</strong>
+                </div>
+                <div class="info-row">
+                    <label>Estado</label>
+                    <strong>{{ user.estado }}</strong>
+                </div>
+                <a href="/reservas/crear/" class="button">Reservar ahora</a>
+            </section>
+
+            <section class="card">
+                <h2>Últimas reservas</h2>
+                <div class="list">
+                    {% for reservation in reservations %}
+                        <div class="reservation">
+                            <div>
+                                <strong>{{ reservation.espacio }}</strong>
+                                <small>{{ reservation.fecha_inicio|date:'d M Y, H:i' }} - {{ reservation.fecha_fin|date:'H:i' }}</small>
+                            </div>
+                            <span class="badge">{{ reservation.estado }}</span>
+                        </div>
+                    {% empty %}
+                        <div class="reservation">
+                            <div>
+                                <strong>Aún no hay reservas.</strong>
+                                <small>Tu historial aparecerá aquí.</small>
+                            </div>
+                        </div>
+                    {% endfor %}
+                </div>
+            </section>
+        </div>
+    </main>
+</body>
+</html>

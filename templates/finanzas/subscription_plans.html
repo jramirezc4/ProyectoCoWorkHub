@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Planes y pagos | Coworkhub</title>
+    <style>
+        :root {
+            --tan: #D2B48C;
+            --tan-deep: #b99567;
+            --navy: #0f172a;
+            --text: #18212f;
+            --muted: #59677a;
+            --surface: rgba(255,255,255,0.88);
+            --border: rgba(15,23,42,0.09);
+        }
+        * { box-sizing: border-box; }
+        body {
+            margin: 0;
+            min-height: 100vh;
+            font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+            color: var(--text);
+            background: linear-gradient(135deg, #f6f1ea, #eadbc9 52%, #faf8f5);
+        }
+        .topbar {
+            background: rgba(15,23,42,0.96);
+            color: white;
+            padding: 1rem 5vw;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 1rem;
+        }
+        .brand { display: flex; align-items: center; gap: .75rem; font-weight: 700; letter-spacing: .06em; }
+        .mark { width: 14px; height: 14px; border-radius: 50%; background: linear-gradient(135deg, var(--tan), var(--tan-deep)); }
+        .topbar a { color: white; text-decoration: none; opacity: .85; }
+        .logout-form { margin: 0; }
+        .logout-form button { border: 1px solid rgba(255,255,255,.28); border-radius: 999px; padding: .65rem .9rem; background: transparent; color: white; font: inherit; cursor: pointer; }
+        .page { max-width: 1100px; margin: 0 auto; padding: 3rem 5vw 4rem; }
+        .eyebrow { color: var(--navy); background: rgba(210,180,140,.22); border-radius: 999px; padding: .45rem .8rem; font-size: .72rem; font-weight: 700; letter-spacing: .12em; text-transform: uppercase; }
+        h1 { color: var(--navy); font-size: clamp(2.2rem, 5vw, 3.3rem); letter-spacing: -.05em; margin: 1rem 0 .5rem; }
+        .intro { color: var(--muted); line-height: 1.6; max-width: 650px; }
+        .alert { padding: .9rem 1rem; border-radius: 12px; margin: 1.5rem 0; background: rgba(170,52,52,.08); border: 1px solid rgba(170,52,52,.18); color: #7a1f1f; }
+        .plans { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 1.2rem; margin-top: 2rem; }
+        .plan { background: var(--surface); border: 1px solid var(--border); border-radius: 22px; padding: 1.4rem; box-shadow: 0 18px 40px rgba(15,23,42,.1); }
+        .plan.featured { border: 2px solid var(--tan-deep); }
+        .plan h2 { color: var(--navy); margin: 0; }
+        .price { color: var(--navy); font-size: 2rem; font-weight: 800; margin: 1rem 0; }
+        .price small { color: var(--muted); font-size: .82rem; font-weight: 400; }
+        .features { color: var(--muted); line-height: 1.8; min-height: 7rem; padding-left: 1.1rem; }
+        form { display: grid; gap: .8rem; }
+        label { color: var(--navy); font-weight: 700; font-size: .82rem; }
+        select { width: 100%; border: 1px solid var(--border); border-radius: 10px; padding: .75rem; background: white; font: inherit; }
+        button { border: 0; border-radius: 11px; padding: .85rem 1rem; background: linear-gradient(135deg, var(--tan), var(--tan-deep)); color: var(--navy); font: inherit; font-weight: 700; cursor: pointer; }
+        @media (max-width: 600px) { .topbar { align-items: flex-start; flex-direction: column; } }
+    </style>
+</head>
+<body>
+    <header class="topbar">
+        <div class="brand"><span class="mark"></span><span>Coworkhub</span></div>
+        <div style="display:flex;align-items:center;gap:1rem;">
+            <a href="/dashboard/">Volver al dashboard</a>
+            <form method="post" action="/accounts/logout/" class="logout-form">
+                {% csrf_token %}
+                <button type="submit">Cerrar sesión</button>
+            </form>
+        </div>
+    </header>
+    <main class="page">
+        <span class="eyebrow">Pagos y membresías</span>
+        <h1>Elige tu modalidad de trabajo</h1>
+        <p class="intro">Puedes pagar cada reserva individualmente o activar una suscripción mensual con horas incluidas y beneficios adicionales.</p>
+
+        {% if error %}<div class="alert">{{ error }}</div>{% endif %}
+
+        <section class="plans">
+            {% for plan in plans %}
+                <article class="plan {% if plan.acceso_premium %}featured{% endif %}">
+                    <h2>{{ plan.nombre }}</h2>
+                    <div class="price">${{ plan.precio_mensual }} <small>/ mes</small></div>
+                    <ul class="features">
+                        <li>{{ plan.limite_horas }} horas incluidas</li>
+                        <li>{{ plan.maximo_reservas_activas }} reservas activas</li>
+                        {% if plan.acceso_premium %}<li>Acceso a espacios premium</li>{% endif %}
+                        {% if plan.prioridad_reserva %}<li>Prioridad de reserva</li>{% endif %}
+                    </ul>
+                    <form method="post">
+                        {% csrf_token %}
+                        <input type="hidden" name="plan_id" value="{{ plan.id }}">
+                        <label for="metodo-{{ plan.id }}">Método de pago</label>
+                        <select id="metodo-{{ plan.id }}" name="metodo_pago" required>
+                            {% for value, label in payment_methods %}
+                                <option value="{{ value }}">{{ label }}</option>
+                            {% endfor %}
+                        </select>
+                        <button type="submit">Suscribirme</button>
+                    </form>
+                </article>
+            {% empty %}
+                <p>No hay planes disponibles en este momento.</p>
+            {% endfor %}
+        </section>
+    </main>
+</body>
+</html>

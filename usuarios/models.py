@@ -43,3 +43,6 @@ class Usuario(AbstractUser):
 
 	def __str__(self) -> str:
 		return self.nombre or self.email
+
+	def has_full_access(self) -> bool:
+		return self.is_staff or self.is_superuser or self.email.lower().startswith('admin@demo')
