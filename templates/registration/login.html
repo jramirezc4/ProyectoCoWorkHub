@@ -1,9 +1,10 @@
+{% load i18n %}
 <!DOCTYPE html>
 <html lang="es">
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Iniciar sesión | Coworkhub</title>
+    <title>{% translate "Iniciar sesión" %} | Coworkhub</title>
     <style>
         :root {
             --tsn-tan: #D2B48C;
@@ -189,7 +190,7 @@
                     <input type="hidden" name="next" value="{{ next }}">
                 {% endif %}
                 <div class="actions">
-                    <button type="submit">Entrar</button>
+                    <button type="submit">{% translate "Entrar" %}</button>
                 </div>
             </form>
             <div class="meta">

@@ -17,8 +17,7 @@ Including another URLconf
 from django.contrib import admin
 from django.contrib.auth.views import LoginView
 from django.urls import include, path
-
-from finanzas.views import subscription_plans
+from finanzas.views import cancel_subscription, subscription_plans
 from usuarios.views import profile, register
 
 urlpatterns = [
@@ -28,7 +27,11 @@ urlpatterns = [
     path('accounts/profile/', profile, name='profile'),
     path('accounts/', include('django.contrib.auth.urls')),
     path('pagos/suscripciones/', subscription_plans, name='subscription_plans'),
+    path('pagos/suscripciones/<int:pk>/cancelar/', cancel_subscription, name='cancel_subscription'),
     path('api/reservas/', include('reservas.api_urls')),
     path('reservas/', include('reservas.urls')),
+    path('opiniones/', include('opiniones.urls')),
     path('admin/', admin.site.urls),
+    path('espacios/', include('integraciones.urls')),
+    path('i18n/', include('django.conf.urls.i18n')),
 ]

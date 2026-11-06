@@ -1,0 +1,37 @@
+msgid ""
+msgstr ""
+"Language: es\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+
+msgid "Tu oficina ideal empieza aquí."
+msgstr "Tu oficina ideal empieza aquí."
+
+msgid "Gestiona reservas, optimiza espacios y facilita la experiencia de trabajo colaborativo con una solución moderna para equipos corporativos."
+msgstr "Gestiona reservas, optimiza espacios y facilita la experiencia de trabajo colaborativo con una solución moderna para equipos corporativos."
+
+msgid "Nueva reserva"
+msgstr "Nueva reserva"
+
+msgid "Iniciar sesión"
+msgstr "Iniciar sesión"
+
+msgid "Entrar"
+msgstr "Entrar"
+
+msgid "Crear cuenta"
+msgstr "Crear cuenta"
+
+msgid "Planes y pagos"
+msgstr "Planes y pagos"
+
+msgid "Crear reserva"
+msgstr "Crear reserva"
+
+msgid "Editar"
+msgstr "Editar"
+
+msgid "Crear"
+msgstr "Crear"
+
+msgid "reseña"
+msgstr "reseña"

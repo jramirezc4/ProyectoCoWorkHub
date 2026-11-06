@@ -27,6 +27,8 @@ Authentication con un usuario creado desde `/admin/`.
 | GET | `/api/reservas/` | Reservas del usuario autenticado |
 | POST | `/api/reservas/` | Crea y confirma una reserva |
 | GET | `/api/reservas/<id>/` | Consulta una reserva propia |
+| DELETE | `/api/reservas/<id>/` | Cancela una reserva propia antes de su inicio |
+| GET | `/api/reservas/disponibilidad/` | Consulta disponibilidad para un espacio y rango |
 
 Ejemplo de entrada:
 
@@ -41,7 +43,13 @@ Ejemplo de entrada:
 
 Respuestas relevantes: `201` creacion exitosa, `400` datos invalidos,
 `404` reserva inexistente o ajena, y `409` conflicto de disponibilidad o
-suscripcion.
+suscripcion o cancelacion.
+
+La consulta de disponibilidad recibe `espacio_id`, `fecha_inicio` y
+`fecha_fin` como parametros. Las reservas solo pueden realizarse en el
+horario de la sede, el mismo dia, antes de su inicio y en espacios/sedes
+activos. Las reservas pendientes y confirmadas bloquean el rango; las
+canceladas no lo bloquean.
 
 ## Arquitectura y responsabilidades
 
@@ -63,6 +71,42 @@ suscripcion.
 
 Esta distribucion aplica SRP: cada capa tiene una razon de cambio distinta y
 la vista depende del servicio, no de detalles de calculo o persistencia.
+
+## Suscripciones y límites
+
+Las reservas con modalidad `SUSCRIPCION` validan la suscripción activa que
+corresponde a la fecha de inicio. El sistema controla las horas consumidas,
+el máximo de reservas pendientes o confirmadas y que la reserva termine antes
+del vencimiento. Las reservas canceladas dejan de consumir el plan.
+
+Las suscripciones vencidas se marcan automáticamente como `VENCIDA` cuando
+se consulta su estado o se intenta reservar. Si tienen renovación automática,
+se extiende el período mensual; de lo contrario, quedan vencidas. La vista
+`/pagos/suscripciones/` permite cancelar una suscripción activa.
+
+## Pagos y facturación simulados
+
+El proyecto utiliza `SimulatedPaymentGateway`, sin llamadas externas ni
+costos. Para demostrar un pago aprobado usa la tarjeta ficticia
+`4242 4242 4242 4242`, vencimiento `12/30` y CVV `123`; el sistema valida los
+datos, no los almacena y genera automáticamente una `Factura` asociada al
+`Pago`. Cualquier dato diferente se rechaza. Esto aplica tanto a pagos individuales de reservas
+como a la activación de suscripciones, que permanece en estado `ACTIVA`.
+
+## Reseñas y administración
+
+El usuario puede reseñar una reserva cuando el administrador la marca como
+`COMPLETADA` desde `/admin/`. Solo el dueño de la reserva puede crear o editar
+la reseña. El administrador puede consultar reseñas, usuarios, sedes,
+espacios, reservas, planes, suscripciones, pagos y facturas; además dispone
+de roles `Administrador`, `Operador` y `Usuario` y acciones para completar o
+cancelar reservas.
+
+Para crear lugares, entra a `http://localhost/admin/` con una cuenta
+administradora. En la pantalla inicial usa `+ Nueva sede`, completa nombre,
+ciudad, dirección y horario, guarda, y después usa `+ Nuevo espacio` para
+asociar una sala u oficina a esa sede. También puedes abrir directamente
+`/admin/reservas/sede/add/` o `/admin/reservas/espacio/add/`.
 
 ## Secuencia de creacion de reserva
 

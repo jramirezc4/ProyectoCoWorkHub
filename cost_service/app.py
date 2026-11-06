@@ -25,6 +25,17 @@ def health():
     return jsonify({'status': 'ok', 'service': 'cost-service'})
 
 
+@app.get('/api/v2/servicio-aliado/')
+def allied_spaces():
+    return jsonify({
+        'provider': 'ally-demo',
+        'spaces': [
+            {'name': 'Sala Norte Aliada', 'city': 'Bogota'},
+            {'name': 'Cowork Lab Aliado', 'city': 'Medellin'},
+        ],
+    })
+
+
 @app.post('/api/v2/cotizaciones/')
 def calculate_quote():
     payload = request.get_json(silent=True)

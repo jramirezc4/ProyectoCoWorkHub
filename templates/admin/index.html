@@ -1,0 +1,10 @@
+{% extends "admin/index.html" %}
+
+{% block content %}
+<div style="display:flex; gap:10px; flex-wrap:wrap; margin-bottom:20px;">
+    <a class="button" href="{% url 'admin:reservas_sede_add' %}">+ Nueva sede</a>
+    <a class="button" href="{% url 'admin:reservas_espacio_add' %}">+ Nuevo espacio</a>
+    <a class="button" href="{% url 'admin:reservas_reserva_changelist' %}">Ver reservas</a>
+</div>
+{{ block.super }}
+{% endblock %}

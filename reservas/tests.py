@@ -24,7 +24,9 @@ class ReservationApiTests(TestCase):
 			sede=self.sede, nombre='Sala Azul', capacidad=8,
 			precio_por_hora=Decimal('25.00'),
 		)
-		self.start = timezone.now() + timedelta(days=1)
+		self.start = (timezone.now() + timedelta(days=1)).replace(
+			hour=9, minute=0, second=0, microsecond=0
+		)
 		self.payload = {
 			'espacio_id': self.espacio.id,
 			'fecha_inicio': self.start.isoformat(),
@@ -57,6 +59,53 @@ class ReservationApiTests(TestCase):
 
 		self.assertEqual(response.status_code, 404)
 
+	def test_delete_reservation_cancels_it_and_frees_the_time_range(self):
+		created = self.client.post('/api/reservas/', self.payload, format='json')
+
+		response = self.client.delete(f"/api/reservas/{created.data['id']}/")
+
+		self.assertEqual(response.status_code, 204)
+		self.assertEqual(
+			self.client.get(f"/api/reservas/{created.data['id']}/").data['estado'],
+			EstadoReserva.CANCELADA,
+		)
+		recreated = self.client.post('/api/reservas/', self.payload, format='json')
+		self.assertEqual(recreated.status_code, 201)
+
+	def test_availability_endpoint_reports_conflicts(self):
+		self.client.post('/api/reservas/', self.payload, format='json')
+
+		response = self.client.get('/api/reservas/disponibilidad/', {
+			'espacio_id': self.espacio.id,
+			'fecha_inicio': self.payload['fecha_inicio'],
+			'fecha_fin': self.payload['fecha_fin'],
+		})
+
+		self.assertEqual(response.status_code, 200)
+		self.assertFalse(response.data['disponible'])
+
+	def test_reservation_outside_site_hours_is_rejected(self):
+		payload = {
+			**self.payload,
+			'fecha_inicio': self.start.replace(hour=18).isoformat(),
+			'fecha_fin': self.start.replace(hour=21).isoformat(),
+		}
+
+		response = self.client.post('/api/reservas/', payload, format='json')
+
+		self.assertEqual(response.status_code, 400)
+
+	def test_user_cannot_cancel_another_users_reservation(self):
+		created = self.client.post('/api/reservas/', self.payload, format='json')
+		other_user = Usuario.objects.create_user(
+			email='other@example.com', password='password123', nombre='Otra'
+		)
+		self.client.force_authenticate(other_user)
+
+		response = self.client.delete(f"/api/reservas/{created.data['id']}/")
+
+		self.assertEqual(response.status_code, 404)
+
 	def test_login_page_exists_and_protected_reservation_redirects(self):
 		client = Client()
 
@@ -74,7 +123,7 @@ class ReservationApiTests(TestCase):
 		home_response = client.get('/')
 		self.assertEqual(home_response.status_code, 200)
 		self.assertContains(home_response, 'Coworkhub')
-		self.assertContains(home_response, 'Dashboard')
+		self.assertContains(home_response, 'Mi espacio')
 		self.assertNotContains(home_response, '>Ingresar<')
 
 		form_response = client.get('/reservas/crear/')
@@ -87,7 +136,7 @@ class ReservationApiTests(TestCase):
 
 		dashboard_response = client.get('/dashboard/')
 		self.assertEqual(dashboard_response.status_code, 200)
-		self.assertContains(dashboard_response, 'Panel de control')
+		self.assertContains(dashboard_response, 'Tu espacio de trabajo')
 
 		profile_response = client.get('/accounts/profile/')
 		self.assertEqual(profile_response.status_code, 200)
@@ -128,6 +177,9 @@ class ReservationApiTests(TestCase):
 		response = client.post('/pagos/suscripciones/', {
 			'plan_id': plan.id,
 			'metodo_pago': 'TARJETA',
+			'numero_tarjeta': '4242 4242 4242 4242',
+			'vencimiento': '12/30',
+			'cvv': '123',
 		})
 
 		self.assertRedirects(response, '/dashboard/')
@@ -137,13 +189,18 @@ class ReservationApiTests(TestCase):
 	def test_html_reservation_creates_individual_payment(self):
 		client = Client()
 		client.force_login(self.user)
-		start = timezone.now() + timedelta(days=2)
+		start = (timezone.now() + timedelta(days=2)).replace(
+			hour=9, minute=0, second=0, microsecond=0
+		)
 		response = client.post('/reservas/crear/', {
 			'espacio': self.espacio.id,
 			'fecha_inicio': start.strftime('%Y-%m-%dT%H:%M'),
 			'fecha_fin': (start + timedelta(hours=2)).strftime('%Y-%m-%dT%H:%M'),
 			'modalidad_pago': ModalidadPago.PAGO_USO,
 			'metodo_pago': 'TARJETA',
+			'numero_tarjeta': '4242 4242 4242 4242',
+			'vencimiento': '12/30',
+			'cvv': '123',
 		})
 
 		self.assertEqual(response.status_code, 200)
@@ -165,7 +222,9 @@ class ReservationApiTests(TestCase):
 		)
 		client = Client()
 		client.force_login(admin_user)
-		start = timezone.now() + timedelta(days=3)
+		start = (timezone.now() + timedelta(days=3)).replace(
+			hour=9, minute=0, second=0, microsecond=0
+		)
 
 		response = client.post('/reservas/crear/', {
 			'espacio': self.espacio.id,

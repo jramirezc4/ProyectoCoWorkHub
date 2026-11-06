@@ -24,6 +24,12 @@ class EstadoUsuario(models.TextChoices):
 	INACTIVO = 'INACTIVO', 'Inactivo'
 
 
+class RolUsuario(models.TextChoices):
+	ADMINISTRADOR = 'ADMINISTRADOR', 'Administrador'
+	OPERADOR = 'OPERADOR', 'Operador'
+	USUARIO = 'USUARIO', 'Usuario'
+
+
 class Usuario(AbstractUser):
 	username = None
 	objects = UsuarioManager()
@@ -37,6 +43,11 @@ class Usuario(AbstractUser):
 		choices=EstadoUsuario.choices,
 		default=EstadoUsuario.ACTIVO,
 	)
+	rol = models.CharField(
+		max_length=20,
+		choices=RolUsuario.choices,
+		default=RolUsuario.USUARIO,
+	)
 
 	USERNAME_FIELD = 'email'
 	REQUIRED_FIELDS = ['nombre']
@@ -45,4 +56,9 @@ class Usuario(AbstractUser):
 		return self.nombre or self.email
 
 	def has_full_access(self) -> bool:
-		return self.is_staff or self.is_superuser or self.email.lower().startswith('admin@demo')
+		return (
+			self.is_staff
+			or self.is_superuser
+			or self.rol == RolUsuario.ADMINISTRADOR
+			or self.email.lower().startswith('admin@demo')
+		)

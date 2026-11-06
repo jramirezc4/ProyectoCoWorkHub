@@ -1,0 +1,62 @@
+{% extends "admin/base.html" %}
+
+{% block title %}Administración | CoworkHub{% endblock %}
+
+{% block branding %}
+<h1 id="site-name"><a href="{% url 'admin:index' %}">CoworkHub · Administración</a></h1>
+{% endblock %}
+
+{% block extrastyle %}
+{{ block.super }}
+<style>
+    :root {
+        --primary: #0f172a;
+        --secondary: #b99567;
+        --link-fg: #8d6a3e;
+        --accent: #d2b48c;
+        --surface: #f8f5f0;
+    }
+    body { background: linear-gradient(135deg, #f7f3ee, #f2eadd 45%, #f9f7f4); }
+
+    #header {
+        background: rgba(15, 23, 42, .96);
+    }
+
+    #branding h1, #branding h1 a:link, #branding h1 a:visited {
+        color: #fff;
+        font-weight: 700;
+    }
+
+    div.breadcrumbs {
+        background: rgba(210, 180, 140, .16);
+        color: #1e293b;
+    }
+
+    .button, input[type=submit], input[type=button], .submit-row input,
+    a.button {
+        background: linear-gradient(135deg, var(--accent), var(--secondary));
+        color: var(--primary);
+        border-radius: 10px;
+    }
+
+    .button:hover, input[type=submit]:hover, input[type=button]:hover,
+    .submit-row input:hover, a.button:hover {
+        background: var(--secondary);
+    }
+
+    .object-tools a.addlink {
+        background-image: none;
+        padding-left: 12px;
+    }
+    #content { max-width: 1280px; }
+    #content-main .module, .module, .inline-group {
+        border: 1px solid rgba(15, 23, 42, .08);
+        border-radius: 16px;
+        overflow: hidden;
+        box-shadow: 0 12px 25px rgba(15, 23, 42, .05);
+    }
+    caption, .module h2, .module caption { background: var(--primary); }
+    a:link, a:visited { color: var(--link-fg); }
+    #user-tools a { color: white; }
+</style>
+{% endblock %}

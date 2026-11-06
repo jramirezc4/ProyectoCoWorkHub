@@ -1,9 +1,10 @@
+{% load i18n %}
 <!DOCTYPE html>
 <html lang="es">
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Crear reserva | Coworkhub</title>
+    <title>{% translate "Crear reserva" %} | Coworkhub</title>
     <style>
         :root {
             --tsn-tan: #D2B48C;
@@ -255,6 +256,12 @@
 
             {% if success %}
                 <div class="alert success">{{ success }}</div>
+                {% if payment.factura %}
+                    <div class="alert success">
+                        Factura simulada: {{ payment.factura.numero_factura }} ·
+                        Total: ${{ payment.factura.total }}
+                    </div>
+                {% endif %}
             {% endif %}
 
             {% if form.non_field_errors %}
@@ -270,17 +277,29 @@
                 </div>
 
                 <div class="field">
-                    {{ form.fecha_inicio.label_tag }}
-                    {{ form.fecha_inicio }}
-                    <small>{{ form.fecha_inicio.help_text }}</small>
-                    {{ form.fecha_inicio.errors }}
+                    {{ form.fecha_inicio_dia.label_tag }}
+                    {{ form.fecha_inicio_dia }}
+                    {{ form.fecha_inicio_dia.errors }}
                 </div>
 
                 <div class="field">
-                    {{ form.fecha_fin.label_tag }}
-                    {{ form.fecha_fin }}
-                    <small>{{ form.fecha_fin.help_text }}</small>
-                    {{ form.fecha_fin.errors }}
+                    {{ form.hora_inicio.label_tag }}
+                    {{ form.hora_inicio }}
+                    <small>Formato de 24 horas, solo intervalos exactos.</small>
+                    {{ form.hora_inicio.errors }}
+                </div>
+
+                <div class="field">
+                    {{ form.fecha_fin_dia.label_tag }}
+                    {{ form.fecha_fin_dia }}
+                    {{ form.fecha_fin_dia.errors }}
+                </div>
+
+                <div class="field">
+                    {{ form.hora_fin.label_tag }}
+                    {{ form.hora_fin }}
+                    <small>La hora final debe ser posterior a la inicial.</small>
+                    {{ form.hora_fin.errors }}
                 </div>
 
                 <div class="field full">
@@ -298,6 +317,24 @@
                     {{ form.metodo_pago.label_tag }}
                     {{ form.metodo_pago }}
                     {{ form.metodo_pago.errors }}
+                </div>
+                <div class="field full">
+                    {{ form.numero_tarjeta.label_tag }}
+                    {{ form.numero_tarjeta }}
+                    <small>{{ form.numero_tarjeta.help_text }}</small>
+                    {{ form.numero_tarjeta.errors }}
+                </div>
+                <div class="field">
+                    {{ form.vencimiento.label_tag }}
+                    {{ form.vencimiento }}
+                    <small>{{ form.vencimiento.help_text }}</small>
+                    {{ form.vencimiento.errors }}
+                </div>
+                <div class="field">
+                    {{ form.cvv.label_tag }}
+                    {{ form.cvv }}
+                    <small>{{ form.cvv.help_text }}</small>
+                    {{ form.cvv.errors }}
                 </div>
 
                 <div class="actions">

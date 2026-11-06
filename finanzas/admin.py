@@ -20,9 +20,11 @@ class SuscripcionAdmin(admin.ModelAdmin):
 class PagoAdmin(admin.ModelAdmin):
 	list_display = ('fecha_pago', 'monto', 'metodo_pago', 'estado', 'tipo_pago')
 	list_filter = ('estado', 'metodo_pago', 'tipo_pago')
+	readonly_fields = ('fecha_pago', 'referencia_transaccion')
 
 
 @admin.register(Factura)
 class FacturaAdmin(admin.ModelAdmin):
 	list_display = ('numero_factura', 'fecha_emision', 'total')
 	search_fields = ('numero_factura',)
+	readonly_fields = ('numero_factura', 'fecha_emision', 'subtotal', 'impuestos', 'total')

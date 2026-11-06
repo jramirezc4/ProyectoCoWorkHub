@@ -1,0 +1,29 @@
+{% load i18n %}
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>{% if editing %}{% translate "Editar" %}{% else %}{% translate "Crear" %}{% endif %} {% translate "reseña" %} | Coworkhub</title>
+    <style>
+        body { margin: 0; padding: 3rem 5vw; font-family: Segoe UI, sans-serif; background: #f6f1ea; color: #18212f; }
+        .card { max-width: 620px; margin: auto; padding: 2rem; background: white; border-radius: 20px; }
+        label { display: block; margin: 1rem 0 .4rem; font-weight: 700; }
+        input, textarea { width: 100%; padding: .8rem; box-sizing: border-box; border: 1px solid #d5d9df; border-radius: 8px; font: inherit; }
+        button { margin-top: 1rem; padding: .8rem 1.2rem; border: 0; border-radius: 8px; background: #d2b48c; font-weight: 700; cursor: pointer; }
+        .errorlist { color: #991b1b; }
+    </style>
+</head>
+<body>
+    <main class="card">
+        <h1>{% if editing %}Editar reseña{% else %}Califica tu experiencia{% endif %}</h1>
+        <p>{{ reservation.espacio }} · {{ reservation.fecha_inicio|date:'d/m/Y H:i' }}</p>
+        <form method="post">
+            {% csrf_token %}
+            {{ form.non_field_errors }}
+            {{ form.as_p }}
+            <button type="submit">Guardar reseña</button>
+        </form>
+    </main>
+</body>
+</html>

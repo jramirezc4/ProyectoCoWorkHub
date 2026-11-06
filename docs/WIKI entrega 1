@@ -1,0 +1,227 @@
+ Resumen de la Entrega 1
+
+## 1. Objetivo de la entrega
+
+Se implemento el nucleo principal de Coworkhub y se expuso mediante una API REST usando Django REST Framework.
+
+El diagrama contiene 9 clases y actualmente estan implementadas las 9:
+
+- `Usuario`
+- `Sede`
+- `Espacio`
+- `Reserva`
+- `Resena`
+- `Suscripcion`
+- `Plan`
+- `Pago`
+- `Factura`
+
+Esto representa un avance estructural del 100% del diagrama entregado. Los
+flujos de reseñas, pagos simulados y facturación también están implementados
+en la versión actual.
+
+El avance es superior al rango solicitado de 50% a 60%. Esta cifra se obtiene
+porque el diagrama contiene nueve clases y las nueve estan implementadas.
+
+## 1.1. Correspondencia con el diagrama de clases
+
+| Clase del diagrama | Implementacion | Modulo |
+|---|---|---|
+| Usuario | `usuarios.Usuario` | Usuarios |
+| Sede | `reservas.Sede` | Reservas |
+| Espacio | `reservas.Espacio` | Reservas |
+| Reserva | `reservas.Reserva` | Reservas |
+| Resena | `opiniones.Resena` | Opiniones |
+| Suscripcion | `finanzas.Suscripcion` | Finanzas |
+| Plan | `finanzas.Plan` | Finanzas |
+| Pago | `finanzas.Pago` | Finanzas |
+| Factura | `finanzas.Factura` | Finanzas |
+
+Los identificadores del diagrama (`idUsuario`, `idReserva`, etc.) se representan
+con el campo `id` automatico de Django.
+
+## 2.1. Capa de dominio
+
+Las clases del diagrama se organizaron por modulos Django:
+
+- `usuarios/`: contiene `Usuario`.
+- `reservas/`: contiene `Sede`, `Espacio` y `Reserva`.
+- `finanzas/`: contiene `Plan`, `Suscripcion`, `Pago` y `Factura`.
+- `opiniones/`: contiene `Resena`.
+
+Esta division respeta los cuatro modulos del diagrama:
+
+- Gestion de Usuarios: `usuarios/`.
+- Gestion de Reservas: `reservas/`.
+- Gestion Financiera: `finanzas/`.
+- Gestion de Opiniones: `opiniones/`.
+
+Las dependencias tambien corresponden al diagrama: una reserva pertenece a un
+usuario y a un espacio; un espacio pertenece a una sede; una resena pertenece a
+una reserva; una suscripcion pertenece a un usuario y a un plan; y un pago puede
+relacionarse con una reserva o una suscripcion.
+
+Dentro de `reservas`, la estructura interna es:
+
+- `models.py`: entidades y relaciones persistentes.
+- `services.py`: casos de uso y reglas de negocio.
+- `api_views.py`: endpoints HTTP.
+- `serializers.py`: entrada y salida de datos.
+- `domain/`: Builder.
+- `infra/`: Factory.
+- `tests.py`: pruebas del flujo principal.
+
+Se utilizaron tipos adecuados como fechas, horas, decimales, enteros positivos, relaciones entre modelos, estados y opciones enumeradas.
+
+Validaciones implementadas:
+
+- La fecha inicial de una reserva debe ser menor que la fecha final.
+- No se permiten reservas que se crucen en el mismo espacio y horario.
+- La modalidad por suscripcion requiere una suscripcion activa.
+- La calificacion de una resena debe estar entre 1 y 5.
+- Los campos necesarios de una reserva se validan antes de guardarla.
+
+## 2.2. Service Layer y SOLID
+
+La logica de negocio se coloco en servicios y no en las vistas ni en los serializers.
+
+- [reservas/services.py](reservas/services.py): crea reservas, valida disponibilidad, valida suscripciones y calcula el costo.
+- [opiniones/services.py](opiniones/services.py): publica, edita y elimina resenas.
+- [reservas/api_views.py](reservas/api_views.py): recibe la peticion, llama al serializer y al servicio, y devuelve la respuesta HTTP.
+- [reservas/serializers.py](reservas/serializers.py): valida los datos de entrada y transforma la respuesta.
+
+Esto aplica el principio de responsabilidad unica: cada archivo tiene una funcion concreta.
+
+La vista no calcula precios, no revisa disponibilidad y no consulta
+suscripciones. Estas decisiones pertenecen al servicio.
+
+## 2.3. Django REST Framework
+
+Se agrego Django REST Framework en la configuracion del proyecto.
+
+La API utiliza `APIView` y tiene estos endpoints:
+
+- `GET /api/reservas/`: lista las reservas del usuario autenticado.
+- `POST /api/reservas/`: crea una reserva.
+- `GET /api/reservas/<id>/`: consulta una reserva propia.
+- `DELETE /api/reservas/<id>/`: cancela una reserva propia antes de su inicio.
+- `GET /api/reservas/disponibilidad/`: consulta disponibilidad para un rango.
+
+Serializers implementados:
+
+- `ReservationCreateSerializer`: recibe y valida los datos.
+- `ReservationSerializer`: devuelve la informacion de la reserva.
+
+Codigos HTTP implementados:
+
+- `201`: reserva creada correctamente.
+- `400`: datos invalidos o incompletos.
+- `404`: reserva inexistente o perteneciente a otro usuario.
+- `409`: horario ocupado o suscripcion no disponible.
+
+## 2.4. Patrones creacionales
+
+### Builder
+
+Se implemento en [reservas/domain/reservation_builder.py](reservas/domain/reservation_builder.py).
+
+Se utiliza para construir una `Reserva` paso a paso, agregando usuario, espacio, fechas, modalidad y costo. Antes de crearla verifica los campos obligatorios y las fechas.
+
+### Factory
+
+Se implemento en [reservas/infra/factories.py](reservas/infra/factories.py).
+
+La Factory permite seleccionar el calculador del costo de la reserva:
+
+- Calculador real: usa las horas reservadas y el precio del espacio.
+- Calculador mock: permite hacer pruebas sin usar el calculo real.
+
+El servicio utiliza la Factory sin depender directamente de una implementacion concreta.
+
+## 2.5. Diagrama de secuencia
+
+```mermaid
+sequenceDiagram
+		actor Cliente
+		participant API as ReservationCollectionAPIView
+		participant Serializer as ReservationCreateSerializer
+		participant Service as ReservationService
+		participant Factory as ReservationCostCalculatorFactory
+		participant Builder as ReservationBuilder
+		participant DB as Base de datos
+
+		Cliente->>API: POST datos de reserva
+		API->>Serializer: validar payload
+		Serializer-->>API: datos tipados
+		API->>Service: create_reservation()
+		Service->>DB: verificar suscripcion y disponibilidad
+		Service->>Factory: crear calculador
+		Factory-->>Service: calculador real o mock
+		Service->>Builder: construir Reserva
+		Builder-->>Service: entidad validada
+		Service->>DB: guardar reserva confirmada
+		DB-->>Service: reserva persistida
+		Service-->>API: reserva creada
+		API-->>Cliente: respuesta JSON 201
+```
+
+## 2.6. Preparacion para API Gateway
+
+La API esta preparada para ubicarse detras de un API Gateway porque:
+
+- Tiene rutas separadas bajo `/api/reservas/`.
+- Utiliza JSON y codigos HTTP estandar.
+- El Gateway puede enrutar `/api/reservas/*` hacia el servicio de reservas.
+- La autenticacion, rate limiting, CORS y trazabilidad pueden centralizarse en
+	el Gateway.
+- Django conserva la autorizacion a nivel de recurso y cada usuario solo puede
+	consultar sus propias reservas.
+- La URL puede versionarse posteriormente como `/api/v1/reservas/`.
+- La logica de negocio esta desacoplada de HTTP, lo que facilita escalar el
+	servicio horizontalmente.
+
+## 2.7. Diferencias justificadas del diagrama
+
+- Las operaciones del diagrama no se implementan como metodos de los modelos
+	cuando representan reglas de negocio. Por ejemplo, la creacion de reservas
+	esta en `ReservationService` y las operaciones de resenas estan en
+	`ReviewService`. Esto cumple el requisito de Service Layer.
+- El diagrama muestra una relacion directa entre `Plan` y `Pago`. En el codigo,
+	`Pago` se relaciona con `Reserva` o `Suscripcion`, y `Suscripcion` se
+	relaciona con `Plan`. Es una relacion indirecta que representa el flujo
+	financiero y esta documentada como decision de implementacion.
+
+## 3. Entregables y documentacion
+
+Se agregaron:
+
+- Migraciones iniciales para todas las aplicaciones.
+- `requirements.txt` con Django REST Framework.
+- Pruebas automatizadas para creacion, validacion, conflicto y recurso inexistente.
+- [README.md](README.md) con instrucciones, arquitectura, secuencia y API Gateway.
+- [ENTREGA_1_CUMPLIMIENTO.md](ENTREGA_1_CUMPLIMIENTO.md) con la revision detallada.
+
+## Verificacion
+
+```text
+python manage.py check  -> OK
+python manage.py test   -> 4 tests OK
+python manage.py migrate -> OK
+```
+
+La verificacion confirma que el proyecto carga correctamente, que las migraciones
+son aplicables y que el flujo principal de reservas cuenta con pruebas
+automatizadas.
+
+## Funcionalidades académicas adicionales
+
+- Las reseñas se crean únicamente para reservas completadas y solo pueden ser
+  gestionadas por el usuario propietario.
+- Los pagos son simulados localmente. La tarjeta de demostración es
+  `4242 4242 4242 4242`, vencimiento `12/30` y CVV `123`; no se almacenan
+  datos de tarjeta.
+- Cada pago aprobado genera automáticamente una factura persistida.
+- Las suscripciones individuales y los pagos de reservas permanecen activos
+  después de la simulación y pueden consultarse desde el dashboard y el admin.
+- El panel de administración incluye usuarios, roles, sedes, espacios,
+  reservas, reseñas, planes, suscripciones, pagos y facturas.

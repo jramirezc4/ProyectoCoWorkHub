@@ -1,9 +1,10 @@
 <!DOCTYPE html>
-<html lang="es">
+{% load i18n %}
+<html lang="{{ LANGUAGE_CODE }}">
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Panel de control | Coworkhub</title>
+    <title>Tu espacio de trabajo | Coworkhub</title>
     <style>
         :root {
             --tsn-tan: #D2B48C;
@@ -266,6 +267,16 @@
             color: var(--tsn-slate);
             border: 1px solid rgba(15, 23, 42, 0.08);
         }
+
+        .cancel-form { margin-top: 0.5rem; text-align: right; }
+        .cancel-form button {
+            border: 0;
+            border-radius: 999px;
+            padding: 0.4rem 0.7rem;
+            color: #991b1b;
+            background: #fee2e2;
+            cursor: pointer;
+        }
     </style>
 </head>
 <body>
@@ -278,7 +289,8 @@
             <a href="/">Inicio</a>
             <a href="/accounts/profile/">Perfil</a>
             <a href="/pagos/suscripciones/">Planes</a>
-            <a href="/reservas/crear/" class="primary">Nueva reserva</a>
+            <a href="/espacios/">Espacios disponibles</a>
+            <a href="/reservas/crear/" class="primary">{% translate "Nueva reserva" %}</a>
             <form method="post" action="/accounts/logout/" class="logout-form">
                 {% csrf_token %}
                 <button type="submit">Cerrar sesión</button>
@@ -290,7 +302,7 @@
         <div class="header">
             <div>
                 <span class="eyebrow">Workspace</span>
-                <h1>Panel de control</h1>
+                <h1>Tu espacio de trabajo</h1>
                 {% if user.has_full_access %}<span class="badge">Acceso administrador</span>{% endif %}
             </div>
             <p class="subtitle">Bienvenido, {{ user.nombre|default:user.email }}</p>
@@ -314,6 +326,21 @@
         <section class="grid">
             <div class="panel">
                 <h2>Reservas recientes</h2>
+                {% if notifications %}
+                    <div class="reservation">
+                        <div>
+                            <strong>Notificaciones</strong>
+                            {% for notification in notifications %}
+                                <small>{{ notification.mensaje }}</small>
+                            {% endfor %}
+                        </div>
+                    </div>
+                {% endif %}
+                {% if messages %}
+                    {% for message in messages %}
+                        <div class="reservation"><strong>{{ message }}</strong></div>
+                    {% endfor %}
+                {% endif %}
                 <div class="list">
                     {% for reservation in reservations %}
                         <div class="reservation">
@@ -321,7 +348,18 @@
                                 <strong>{{ reservation.espacio }}</strong>
                                 <small>{{ reservation.fecha_inicio|date:'d M Y, H:i' }} - {{ reservation.fecha_fin|date:'H:i' }}</small>
                             </div>
-                            <span class="badge">{{ reservation.estado }}</span>
+                            <div>
+                                <span class="badge">{{ reservation.estado }}</span>
+                                {% if reservation.estado == 'COMPLETADA' %}
+                                    <a href="/opiniones/crear/{{ reservation.id }}/" class="review-link">Reseñar</a>
+                                {% endif %}
+                                {% if reservation.estado == 'PENDIENTE' or reservation.estado == 'CONFIRMADA' %}
+                                    <form method="post" action="/reservas/{{ reservation.id }}/cancelar/" class="cancel-form">
+                                        {% csrf_token %}
+                                        <button type="submit">Cancelar</button>
+                                    </form>
+                                {% endif %}
+                            </div>
                         </div>
                     {% empty %}
                         <div class="reservation">
@@ -349,8 +387,20 @@
                 </div>
                 <div class="summary-item">
                     <h3>Estado</h3>
-                    <p>Activa</p>
+                    <p>{% if active_subscription %}{{ active_subscription.plan.nombre }}{% else %}Sin plan{% endif %}</p>
                 </div>
+                {% if active_subscription %}
+                    <div class="summary-item">
+                        <h3>Consumo</h3>
+                        <p>{{ subscription_usage.hours_used }} / {{ active_subscription.plan.limite_horas }} h</p>
+                    </div>
+                {% endif %}
+                {% if latest_payment.factura %}
+                    <div class="summary-item">
+                        <h3>Última factura</h3>
+                        <p>{{ latest_payment.factura.numero_factura }}</p>
+                    </div>
+                {% endif %}
             </aside>
         </section>
     </main>

@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Espacios disponibles | Coworkhub</title>
+    <style>
+        :root { --tan:#d2b48c; --deep:#b99567; --navy:#0f172a; --muted:#59677a; --border:rgba(15,23,42,.08); }
+        * { box-sizing:border-box; }
+        body { margin:0; color:#18212f; font-family:"Segoe UI",Tahoma,sans-serif; background:linear-gradient(135deg,#f7f3ee,#f2eadd 45%,#f9f7f4); }
+        .topbar { background:rgba(15,23,42,.96); color:#fff; padding:1rem 5vw; display:flex; justify-content:space-between; align-items:center; gap:1rem; }
+        .brand { display:flex; align-items:center; gap:.8rem; font-weight:700; letter-spacing:.05em; }
+        .mark { width:14px; height:14px; border-radius:50%; background:linear-gradient(135deg,var(--tan),var(--deep)); }
+        nav { display:flex; align-items:center; gap:1rem; flex-wrap:wrap; }
+        nav a { color:#fff; text-decoration:none; opacity:.85; }
+        nav a.primary, button { background:linear-gradient(135deg,var(--tan),var(--deep)); color:var(--navy); padding:.7rem 1rem; border:0; border-radius:999px; font-weight:700; }
+        .logout { border:1px solid rgba(255,255,255,.28); background:transparent; color:#fff; cursor:pointer; }
+        main { max-width:1100px; margin:auto; padding:3.5rem 5vw; }
+        .eyebrow { display:inline-block; padding:.45rem .8rem; border-radius:999px; background:rgba(210,180,140,.16); color:#1e293b; font-size:.72rem; font-weight:700; letter-spacing:.12em; text-transform:uppercase; }
+        h1 { margin:1rem 0 .5rem; color:var(--navy); font-size:clamp(2.3rem,5vw,4rem); letter-spacing:-.05em; }
+        .intro { color:var(--muted); line-height:1.7; max-width:760px; }
+        .venue { margin-top:1.5rem; padding:1.5rem; background:rgba(255,255,255,.82); border:1px solid var(--border); border-radius:24px; box-shadow:0 18px 40px rgba(15,23,42,.08); }
+        .venue-header { display:flex; justify-content:space-between; gap:1rem; flex-wrap:wrap; align-items:start; }
+        h2 { margin:0; color:var(--navy); } .address,.muted { color:var(--muted); }
+        .weather { padding:.8rem 1rem; border-radius:14px; background:rgba(15,23,42,.95); color:#fff; }
+        .weather strong { color:var(--tan); }
+        .spaces { display:grid; grid-template-columns:repeat(auto-fit,minmax(220px,1fr)); gap:1rem; margin-top:1.3rem; }
+        .space { padding:1rem; border:1px solid var(--border); border-radius:16px; background:#f8f5f0; }
+        .space h3 { margin:.1rem 0 .5rem; color:var(--navy); } .space p { margin:.3rem 0; color:var(--muted); }
+        .status { display:inline-block; margin-top:.5rem; padding:.35rem .65rem; border-radius:999px; font-size:.78rem; font-weight:700; }
+        .available { background:#dcfce7; color:#166534; } .occupied { background:#fee2e2; color:#991b1b; }
+        .action { display:inline-block; margin-top:.7rem; color:#8d6a3e; font-weight:700; text-decoration:none; }
+        @media(max-width:700px) { .topbar { align-items:flex-start; flex-direction:column; } }
+    </style>
+</head>
+<body>
+    <header class="topbar">
+        <div class="brand"><span class="mark"></span><span>Coworkhub</span></div>
+        <nav>
+            <a href="/">Inicio</a><a href="/dashboard/">Mi espacio</a>
+            <a href="/reservas/crear/" class="primary">Nueva reserva</a>
+            <form method="post" action="/accounts/logout/">
+                {% csrf_token %}<button class="logout" type="submit">Cerrar sesión</button>
+            </form>
+        </nav>
+    </header>
+    <main>
+        <span class="eyebrow">Disponibilidad en tiempo real</span>
+        <h1>Encuentra tu espacio ideal</h1>
+        <p class="intro">Consulta las salas y espacios disponibles en cada sede. También puedes ver la hora local y el clima actual para planear mejor tu jornada.</p>
+        {% for venue in venues %}
+            <section class="venue">
+                <div class="venue-header">
+                    <div><h2>{{ venue.sede.nombre }}</h2><p class="address">{{ venue.sede.direccion }} · {{ venue.sede.ciudad }}</p><p class="muted">Horario: {{ venue.sede.horario_apertura|time:"H:i" }} - {{ venue.sede.horario_cierre|time:"H:i" }} · Hora local: {{ venue.hora|date:"H:i" }}</p></div>
+                    <div class="weather">
+                        {% if venue.weather %}<strong>{{ venue.weather.temperature_c }} °C</strong><br>{{ venue.weather.condition }}
+                        {% else %}<strong>Clima no disponible</strong><br>{{ venue.weather_error }}{% endif %}
+                    </div>
+                </div>
+                <div class="spaces">
+                    {% for space in venue.spaces %}
+                        <article class="space">
+                            <h3>{{ space.nombre }}</h3><p>{{ space.get_tipo_display }} · Capacidad {{ space.capacidad }}</p><p>${{ space.precio_por_hora }}/hora</p>
+                            {% if space.id in venue.occupied_ids %}<span class="status occupied">Ocupado ahora</span>
+                            {% else %}<span class="status available">Disponible ahora</span><br><a class="action" href="/reservas/crear/?espacio={{ space.id }}">Reservar este espacio</a>{% endif %}
+                        </article>
+                    {% empty %}<p class="muted">No hay espacios disponibles en esta sede.</p>{% endfor %}
+                </div>
+            </section>
+        {% empty %}<section class="venue"><p class="muted">Todavía no hay sedes activas. Un administrador puede crearlas desde el panel.</p></section>{% endfor %}
+    </main>
+</body>
+</html>

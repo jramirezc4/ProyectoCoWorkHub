@@ -1,9 +1,10 @@
+{% load i18n %}
 <!DOCTYPE html>
 <html lang="es">
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Planes y pagos | Coworkhub</title>
+    <title>{% translate "Planes y pagos" %} | Coworkhub</title>
     <style>
         :root {
             --tan: #D2B48C;
@@ -59,7 +60,7 @@
     <header class="topbar">
         <div class="brand"><span class="mark"></span><span>Coworkhub</span></div>
         <div style="display:flex;align-items:center;gap:1rem;">
-            <a href="/dashboard/">Volver al dashboard</a>
+            <a href="/">Volver al inicio</a>
             <form method="post" action="/accounts/logout/" class="logout-form">
                 {% csrf_token %}
                 <button type="submit">Cerrar sesión</button>
@@ -72,6 +73,16 @@
         <p class="intro">Puedes pagar cada reserva individualmente o activar una suscripción mensual con horas incluidas y beneficios adicionales.</p>
 
         {% if error %}<div class="alert">{{ error }}</div>{% endif %}
+        {% if active_subscription %}
+            <div class="alert">
+                Suscripción activa: <strong>{{ active_subscription.plan.nombre }}</strong>.
+                Vigente hasta {{ active_subscription.fecha_fin|date:'d/m/Y' }}.
+                <form method="post" action="/pagos/suscripciones/{{ active_subscription.id }}/cancelar/">
+                    {% csrf_token %}
+                    <button type="submit">Cancelar suscripción</button>
+                </form>
+            </div>
+        {% endif %}
 
         <section class="plans">
             {% for plan in plans %}
@@ -93,6 +104,18 @@
                                 <option value="{{ value }}">{{ label }}</option>
                             {% endfor %}
                         </select>
+                        <label for="tarjeta-{{ plan.id }}">Tarjeta demo</label>
+                        <input id="tarjeta-{{ plan.id }}" name="numero_tarjeta"
+                               placeholder="4242 4242 4242 4242"
+                               autocomplete="off">
+                        <label for="vencimiento-{{ plan.id }}">Vencimiento</label>
+                        <input id="vencimiento-{{ plan.id }}" name="vencimiento"
+                               placeholder="12/30" maxlength="5" autocomplete="off">
+                        <label for="cvv-{{ plan.id }}">CVV</label>
+                        <input id="cvv-{{ plan.id }}" name="cvv"
+                               placeholder="123" maxlength="3" inputmode="numeric"
+                               autocomplete="off">
+                        <small>Entorno simulado: no se almacenan los datos.</small>
                         <button type="submit">Suscribirme</button>
                     </form>
                 </article>
